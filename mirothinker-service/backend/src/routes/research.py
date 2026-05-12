@@ -100,6 +100,11 @@ async def _run_research(task_id: str, req: ResearchRequest):
             tier = await classify_query(req.query)
             task_results[task_id]["tier"] = tier
 
+            # Define progress callback to update turn count in real-time
+            def update_progress(turn: int, elapsed: float):
+                task_results[task_id]["turn_count"] = turn
+                task_results[task_id]["elapsed_time"] = elapsed
+
             # Enable quality enhancement by default
             agent = ResearchAgent(enable_quality_enhancement=True)
             result = await agent.run(
@@ -109,6 +114,7 @@ async def _run_research(task_id: str, req: ResearchRequest):
                 model=req.model,
                 temperature=req.temperature,
                 tier=tier,
+                progress_callback=update_progress,
             )
 
             task_results[task_id].update({
