@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiroThinker - 深度研究 AI Agent</title>
+  <meta name="description" content="MiroThinker 深度研究 AI Agent，支持多轮搜索、代码执行、信息综合，实现 SOTA 级别的研究能力">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav container">
+      <div class="nav-brand">
+        <svg class="nav-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <span class="nav-title">MiroThinker</span>
+      </div>
+      <div class="nav-links">
+        <a href="#research" class="nav-link">开始研究</a>
+        <a href="#features" class="nav-link">功能介绍</a>
+        <span class="nav-status" id="status-indicator">● 服务就绪</span>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">深度研究，AI 驱动</h1>
+          <p class="hero-subtitle">输入您的研究问题，AI Agent 将自主进行多轮搜索、分析和推理，输出高质量研究结果</p>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-value">256K</span>
+              <span class="stat-label">上下文窗口</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">300</span>
+              <span class="stat-label">最大工具调用</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">74.0%</span>
+              <span class="stat-label">BrowseComp 得分</span>
+            </div>
+          </div>
+          <a href="#research" class="hero-cta">开始研究</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Research Section -->
+    <section id="research" class="research-section">
+      <div class="container">
+        <div class="research-panel">
+          <h2 class="research-title">开始研究</h2>
+          <form id="research-form" class="research-form">
+            <div class="form-group">
+              <label for="query" class="form-label">研究问题</label>
+              <textarea
+                id="query"
+                name="query"
+                class="form-textarea"
+                placeholder="输入您的研究问题，例如：Compare the environmental impact of electric vehicles vs hydrogen fuel cell vehicles in 2025"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group-half">
+                <label for="max-turns" class="form-label">最大轮数</label>
+                <select id="max-turns" name="max_turns" class="form-select">
+                  <option value="50">50 (快速)</option>
+                  <option value="100">100 (标准)</option>
+                  <option value="200" selected>200 (深度)</option>
+                  <option value="300">300 (极深)</option>
+                </select>
+              </div>
+              <div class="form-group form-group-half">
+                <label for="context-keep" class="form-label">上下文策略</label>
+                <select id="context-keep" name="context_keep" class="form-select">
+                  <option value="-1">保留全部</option>
+                  <option value="10">保留最近10条</option>
+                  <option value="5" selected>保留最近5条 (推荐)</option>
+                  <option value="3">保留最近3条</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group-half">
+                <label for="model" class="form-label">模型选择</label>
+                <select id="model" name="model" class="form-select">
+                  <option value="qwen-plus" selected>Qwen-Plus (均衡)</option>
+                  <option value="qwen-max">Qwen-Max (高质量)</option>
+                  <option value="qwen-flash">Qwen-Flash (快速)</option>
+                  <option value="qwen-turbo">Qwen-Turbo (极速)</option>
+                </select>
+              </div>
+              <div class="form-group form-group-half">
+                <label for="temperature" class="form-label">温度</label>
+                <input
+                  type="range"
+                  id="temperature"
+                  name="temperature"
+                  class="form-range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value="0.7"
+                >
+                <span class="range-value" id="temp-value">0.7</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submit-btn">
+              <span class="btn-text">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+                开始研究
+              </span>
+              <span class="btn-loading" style="display: none;">
+                <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+                </svg>
+                研究中...
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="result-panel" id="result-panel" style="display: none;">
+          <div class="result-header">
+            <h3 class="result-title">研究结果</h3>
+            <div class="result-meta">
+              <span class="result-time" id="result-time"></span>
+              <span class="result-turns" id="result-turns"></span>
+            </div>
+          </div>
+          <div class="result-content" id="result-content"></div>
+          <div class="result-actions">
+            <button class="btn-copy" id="copy-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              复制结果
+            </button>
+            <button class="btn-download" id="download-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              下载 Markdown
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Status -->
+        <div class="status-panel" id="status-panel" style="display: none;">
+          <h3 class="status-title">研究进度</h3>
+          <div class="status-steps" id="status-steps">
+            <div class="status-step" data-step="starting">
+              <div class="status-dot"></div>
+              <span>任务启动</span>
+            </div>
+            <div class="status-step" data-step="searching">
+              <div class="status-dot"></div>
+              <span>搜索信息</span>
+            </div>
+            <div class="status-step" data-step="analyzing">
+              <div class="status-dot"></div>
+              <span>分析推理</span>
+            </div>
+            <div class="status-step" data-step="synthesizing">
+              <div class="status-dot"></div>
+              <span>综合结论</span>
+            </div>
+          </div>
+          <div class="status-log" id="status-log"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <h2 class="section-title">核心能力</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">深度网络搜索</h3>
+            <p class="feature-desc">多轮 Google 搜索 + 网页内容提取，覆盖全互联网信息源</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">代码执行分析</h3>
+            <p class="feature-desc">安全沙箱中执行 Python 代码，支持数据处理与计算</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2z"/>
+                <path d="M12 8v4l3 3"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">上下文管理</h3>
+            <p class="feature-desc">智能保留最近 K 条工具结果，聚焦关键信息</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">多步推理</h3>
+            <p class="feature-desc">ReAct 推理循环，思考 → 行动 → 观察，最多 300 轮</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 9h18"/>
+                <path d="M9 21V9"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">SOTA 性能</h3>
+            <p class="feature-desc">BrowseComp 74.0%, GAIA 82.7%, 超越多数开源 Agent</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">隐私安全</h3>
+            <p class="feature-desc">数据完全本地化处理，保障研究过程信息安全</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>MiroThinker Online Service &middot; Powered by Alibaba Bailian &middot; Built with FastAPI</p>
+    </div>
+  </footer>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

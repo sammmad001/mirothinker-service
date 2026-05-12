@@ -1,0 +1,14 @@
+{
+  "name": "contentai-tests",
+  "version": "1.0.0",
+  "description": "ContentAI comprehensive test suite",
+  "scripts": {
+    "test": "node test/test-framework.js",
+    "test:watch": "node test/watch.js",
+    "test:report": "node test/generate-report.js",
+    "test:ci": "node test/ci-runner.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}

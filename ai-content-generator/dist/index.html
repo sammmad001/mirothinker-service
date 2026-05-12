@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-powered social media content generator for businesses in Southeast Asia and Middle East">
+  <meta name="keywords" content="AI, content generator, social media, Arabic, Malay, Indonesian, Instagram, Facebook, TikTok">
+  <meta name="author" content="ContentAI">
+  <meta property="og:title" content="ContentAI - AI Social Media Content Generator">
+  <meta property="og:description" content="Generate engaging social media content in multiple languages instantly">
+  <meta property="og:type" content="website">
+  <title>ContentAI - AI Social Media Content Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .lang-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .lang-badge {
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #d1d5db;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    input::placeholder {
+      color: #6b7280;
+    }
+
+    .platforms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .platform-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .platform-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .platform-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .results {
+      display: none;
+    }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .result-card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-section {
+      margin-bottom: 12px;
+    }
+
+    .result-label {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .result-content {
+      color: #d1d5db;
+    }
+
+    .hashtags {
+      color: var(--primary);
+    }
+
+    .copy-btn {
+      margin-top: 12px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .pricing {
+      padding: 60px 20px;
+    }
+
+    .pricing h2 {
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .pricing-subtitle {
+      text-align: center;
+      color: #9ca3af;
+      margin-bottom: 40px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .price-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .price-card.popular {
+      border-color: var(--primary);
+      position: relative;
+    }
+
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .price-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .price-value {
+      font-size: 36px;
+      font-weight: 800;
+    }
+
+    .price-period {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .price-features {
+      list-style: none;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .price-features li {
+      padding: 8px 0;
+      color: #d1d5db;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .check { color: #10b981; }
+    .cross { color: #ef4444; }
+
+    .cta-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .cta-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .cta-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #6b7280;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 32px; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="badge">🚀 AI-Powered Content Generation</div>
+    <h1><span class="gradient-text">ContentAI</span></h1>
+    <p class="subtitle">
+      Generate engaging social media content in multiple languages instantly.
+      Perfect for businesses in Southeast Asia and Middle East markets.
+    </p>
+    <div class="lang-badges">
+      <span class="lang-badge">🇸🇦 Arabic</span>
+      <span class="lang-badge">🇲🇾 Malay</span>
+      <span class="lang-badge">🇮🇩 Indonesian</span>
+      <span class="lang-badge">🇺🇸 English</span>
+    </div>
+  </section>
+
+  <!-- Generator Section -->
+  <div class="container">
+    <div class="card">
+      <h2 style="text-align: center; margin-bottom: 24px; font-size: 24px;">Create Your Content</h2>
+
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="product" placeholder="e.g., Organic Coffee Beans">
+      </div>
+
+      <div class="form-group">
+        <label>Brand Name (optional)</label>
+        <input type="text" id="brand" placeholder="e.g., CoffeeCo">
+      </div>
+
+      <div class="form-group">
+        <label>Target Platforms</label>
+        <div class="platforms">
+          <button class="platform-btn active" data-platform="instagram">Instagram</button>
+          <button class="platform-btn" data-platform="facebook">Facebook</button>
+          <button class="platform-btn" data-platform="twitter">Twitter</button>
+          <button class="platform-btn" data-platform="tiktok">TikTok</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Content Language</label>
+        <select id="language">
+          <option value="en">🇺🇸 English</option>
+          <option value="ar">🇸🇦 العربية (Arabic)</option>
+          <option value="ms">🇲🇾 Bahasa Melayu</option>
+          <option value="id">🇮🇩 Bahasa Indonesia</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" id="generateBtn" onclick="generateContent()">
+        <span id="btnText">✨ Generate Content</span>
+        <span class="loading" id="loading">
+          <span class="spinner"></span>
+          Generating...
+        </span>
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results" id="results"></div>
+  </div>
+
+  <!-- Pricing Section -->
+  <section class="pricing" id="pricing">
+    <h2>Simple <span class="gradient-text">Pricing</span></h2>
+    <p class="pricing-subtitle">Start free, upgrade when you need more</p>
+
+    <div class="pricing-grid container">
+      <!-- Free -->
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-value">$0</div>
+        <div class="price-period">forever</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> 5 generations/day</li>
+          <li><span class="check">✓</span> English only</li>
+          <li><span class="cross">✗</span> No multi-platform</li>
+        </ul>
+        <button class="cta-btn">Get Started</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card popular">
+        <div class="popular-badge">POPULAR</div>
+        <div class="price-name">Pro</div>
+        <div class="price-value">$9.99</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Unlimited generations</li>
+          <li><span class="check">✓</span> All 4 languages</li>
+          <li><span class="check">✓</span> All platforms</li>
+          <li><span class="check">✓</span> Priority support</li>
+        </ul>
+        <!-- Pro - LemonSqueezy 按钮 -->
+        <button class="cta-btn primary" onclick="subscribeLemonSqueezy()">Start Free Trial</button>
+        <p style="font-size: 11px; color: #6b7280; margin-top: 8px;">Powered by LemonSqueezy</p>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-value">$29</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Everything in Pro</li>
+          <li><span class="check">✓</span> 10 team members</li>
+          <li><span class="check">✓</span> API access</li>
+          <li><span class="check">✓</span> Custom branding</li>
+        </ul>
+        <button class="cta-btn" onclick="contactSales()">Contact Sales</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Payment Methods Info -->
+  <section class="container" style="padding: 40px 0; text-align: center;">
+    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 24px; max-width: 600px; margin: 0 auto;">
+      <h3 style="margin-bottom: 16px;">💳 支付方式</h3>
+      <p style="color: #9ca3af; margin-bottom: 16px; font-size: 14px;">
+        我们支持多种安全支付方式，资金直接入账银行卡
+      </p>
+      <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <div style="background: rgba(99,102,241,0.2); padding: 8px 16px; border-radius: 8px; font-size: 14px;">
+          💳 Credit Card
+        </div>
+        <div style="background: rgba(99,102,241,0.2); padding: 8px 16px; border-radius: 8px; font-size: 14px;">
+          🏦 Bank Transfer
+        </div>
+        <div style="background: rgba(99,102,241,0.2); padding: 8px 16px; border-radius: 8px; font-size: 14px;">
+          📱 PayPal
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="container" style="padding: 40px 0; text-align: center;">
+    <h2 style="margin-bottom: 16px;">Ready to <span class="gradient-text">grow your business</span>?</h2>
+    <p style="color: #9ca3af; margin-bottom: 24px;">Join thousands of creators using ContentAI</p>
+    <button class="btn-primary" style="max-width: 300px;" onclick="document.getElementById('product').focus()">
+      Start Creating Now
+    </button>
+  </section>
+
+  <footer>
+    <p>© 2024 ContentAI. Built for creators in Southeast Asia & Middle East.</p>
+  </footer>
+
+  <script>
+    let selectedPlatforms = ['instagram'];
+
+    // Platform selection
+    document.querySelectorAll('.platform-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const platform = btn.dataset.platform;
+        if (selectedPlatforms.includes(platform)) {
+          if (selectedPlatforms.length > 1) {
+            selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
+            btn.classList.remove('active');
+          }
+        } else {
+          selectedPlatforms.push(platform);
+          btn.classList.add('active');
+        }
+      });
+    });
+
+    function generateContent() {
+      const product = document.getElementById('product').value.trim();
+      if (!product) {
+        alert('Please enter a product name');
+        return;
+      }
+
+      const brand = document.getElementById('brand').value.trim();
+      const language = document.getElementById('language').value;
+
+      // Show loading
+      document.getElementById('btnText').style.display = 'none';
+      document.getElementById('loading').style.display = 'flex';
+      document.getElementById('generateBtn').disabled = true;
+
+      // Simulate API call
+      setTimeout(() => {
+        const content = generateMockContent(product, brand, language);
+        displayResults(content);
+
+        // Reset button
+        document.getElementById('btnText').style.display = 'flex';
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('generateBtn').disabled = false;
+      }, 2000);
+    }
+
+    function generateMockContent(product, brand, language) {
+      const translations = {
+        en: {
+          intro: `✨ Introducing ${product}${brand ? ` by ${brand}` : ''}!`,
+          hashtags: ['#newproduct', '#innovation', '#mustbuy', '#trending'],
+          body: "Don't miss this amazing product! Tap the link for more details."
+        },
+        ar: {
+          intro: `✨ نقدم لكم ${product}${brand ? ` من ${brand}` : ''}!`,
+          hashtags: ['#منتج_جديد', '#ابتكار', '#لا_تفوّت', '#رائج'],
+          body: 'لا تفوّت هذا المنتج الرائع! انقر الرابط لمزيد من التفاصيل.'
+        },
+        ms: {
+          intro: `✨ Perkenalkan ${product}${brand ? ` oleh ${brand}` : ''}!`,
+          hashtags: ['#produkbaru', '#inovasi', '#harusbeli', '#trending'],
+          body: "Jangan lepaskan produk amazing ini! Tekan link untuk lebih banyak info."
+        },
+        id: {
+          intro: `✨ Perkenalkan ${product}${brand ? ` oleh ${brand}` : ''}!`,
+          hashtags: ['#produkbaru', '#inovasi', '#wajibbeli', '#trending'],
+          body: "Jangan lewatkan produk amazing ini! Ketuk link untuk info lebih lanjut."
+        }
+      };
+
+      const t = translations[language] || translations.en;
+
+      const platformTemplates = {
+        instagram: {
+          headline: t.intro,
+          body: t.body,
+          hashtags: t.hashtags.join(' ')
+        },
+        facebook: {
+          headline: t.intro,
+          body: `We're thrilled to share ${product} with you! This is going to change everything. Share with friends who might love it too!`,
+          hashtags: t.hashtags.join(' ')
+        },
+        twitter: {
+          headline: t.intro,
+          body: `You NEED to check this out! 🔥`,
+          hashtags: t.hashtags.slice(0, 2).join(' ')
+        },
+        tiktok: {
+          headline: `POV: You just discovered ${product}`,
+          body: `Wait for it... 🤯 #fyp #viral #${product.replace(/\s/g, '')}`,
+          hashtags: t.hashtags.slice(0, 3).join(' ')
+        }
+      };
+
+      const result = {};
+      selectedPlatforms.forEach(p => {
+        result[p] = platformTemplates[p] || platformTemplates.instagram;
+      });
+
+      return result;
+    }
+
+    function displayResults(content) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.style.display = 'block';
+      resultsDiv.innerHTML = '<h2 style="text-align: center; margin-bottom: 24px;">Generated Content</h2>';
+
+      Object.entries(content).forEach(([platform, data]) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `
+          <h3>📱 ${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
+          <div class="result-section">
+            <div class="result-label">Headline</div>
+            <div class="result-content">${data.headline}</div>
+          </div>
+          <div class="result-section">
+            <div class="result-label">Caption</div>
+            <div class="result-content">${data.body}</div>
+          </div>
+          <div class="result-section">
+            <div class="result-label">Hashtags</div>
+            <div class="hashtags">${data.hashtags}</div>
+          </div>
+          <button class="copy-btn" onclick="copyToClipboard('${platform}')">📋 Copy to Clipboard</button>
+        `;
+        resultsDiv.appendChild(card);
+      });
+
+      // Scroll to results
+      resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyToClipboard(platform) {
+      const card = event.target.closest('.result-card');
+      const text = card.querySelector('.result-content').textContent;
+      const headline = card.querySelectorAll('.result-content')[0].textContent;
+      const hashtags = card.querySelector('.hashtags').textContent;
+
+      navigator.clipboard.writeText(`${headline}\n\n${text}\n\n${hashtags}`);
+      alert('Copied to clipboard!');
+    }
+
+    // ==================== 支付功能 ====================
+
+    // 支付配置 - 请替换为你自己的支付链接
+    const PAYMENT_CONFIG = {
+      lemonSqueezy: {
+        enabled: true,
+        proUrl: 'https://contentai.lemonsqueezy.com/checkout/buy/YOUR-PRODUCT-ID'
+      },
+      gumroad: {
+        enabled: false,
+        proUrl: 'https://contentai.gumroad.com/l/pro'
+      }
+    };
+
+    function subscribeLemonSqueezy() {
+      const url = PAYMENT_CONFIG.lemonSqueezy.proUrl;
+      if (url.includes('YOUR-PRODUCT-ID')) {
+        showSetupModal();
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    function contactSales() {
+      window.location.href = 'mailto:sales@contentai.tools?subject=Enterprise Plan Inquiry';
+    }
+
+    function showSetupModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;';
+      modal.innerHTML = `
+        <div style="background:#1e293b;border-radius:16px;padding:32px;max-width:500px;width:100%;border:1px solid rgba(255,255,255,0.1);">
+          <h3 style="margin-bottom:16px;font-size:20px;">🚀 启用支付</h3>
+          <p style="color:#9ca3af;margin-bottom:20px;">要启用真实支付：</p>
+          <ol style="color:#d1d5db;margin-bottom:24px;padding-left:20px;line-height:2;">
+            <li>注册 <a href="https://www.lemonsqueezy.com" target="_blank" style="color:#6366f1;">LemonSqueezy</a></li>
+            <li>创建 Pro 订阅产品（$9.99/月）</li>
+            <li>复制产品链接</li>
+            <li>更新 index.html 中的 proUrl</li>
+          </ol>
+          <button onclick="this.closest('[style*=\\"position:fixed\\"]').remove()" style="width:100%;padding:12px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;cursor:pointer;font-weight:600;">
+            知道了
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    handlePaymentSuccess = function() {
+      if (window.location.search.includes('success')) {
+        alert('🎉 订阅成功！感谢您的支持！');
+      }
+    };
+    handlePaymentSuccess();
+  </script>
+</body>
+</html>
