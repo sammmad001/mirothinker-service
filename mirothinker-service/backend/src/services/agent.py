@@ -260,6 +260,7 @@ class ResearchAgent:
         model: str = "qwen-plus",
         temperature: float = 0.7,
         tier: str = None,
+        progress_callback: callable = None,
     ) -> dict:
         """Run the research agent with quality enhancement and Tier routing."""
         start_time = time.time()
@@ -299,6 +300,13 @@ class ResearchAgent:
         while turn < max_turns:
             turn += 1
             agent_state.turn_count = turn
+
+            # Update progress callback with current turn
+            if progress_callback:
+                try:
+                    progress_callback(turn=turn, elapsed=round(time.time() - start_time, 2))
+                except:
+                    pass  # Don't let callback errors break the research
 
             # Get context window
             context = agent_state.get_context_window(context_keep)
