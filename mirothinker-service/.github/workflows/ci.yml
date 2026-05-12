@@ -3,24 +3,27 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main, develop]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main, develop]
-  release:
-    types: [published]
 
 env:
-  PYTHON_VERSION: "3.10"
+  PYTHON_VERSION: "3.11"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # Job 1: Run tests
+  # ==========================================
+  # Job 1: Test Suite
+  # ==========================================
   test:
-    name: Test Suite
+    name: Test Suite (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11"]
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -35,32 +38,85 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx
 
       - name: Lint with ruff
         run: |
+          pip install ruff
           ruff check backend/src backend/tests
+        if: matrix.python-version == '3.11'
 
       - name: Run tests with pytest
         run: |
-          pytest backend/tests --cov=backend/src --cov-report=xml --cov-report=term-missing
+          pytest backend/tests -v --tb=short --junitxml=test-results.xml \
+            --cov=backend/src --cov-report=xml --cov-report=term-missing
         env:
+          MIRO_ENV: testing
           DASHSCOPE_API_KEY: test-key-for-ci
+          DASHSCOPE_BASE_URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: test-results.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.11'
         with:
           file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
 
-  # Job 2: Build Docker image
+  # ==========================================
+  # Job 2: Build Artifact
+  # ==========================================
   build:
+    name: Build Artifact
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v'))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment package
+        run: |
+          # Create tarball with source code
+          tar -czf mirothinker-${{ github.sha }}.tar.gz \
+            --exclude='.git' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.env*' \
+            --exclude='data/' \
+            --exclude='backups/' \
+            .
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mirothinker-build
+          path: mirothinker-${{ github.sha }}.tar.gz
+
+      - name: Verify package structure
+        run: |
+          echo "Verifying package contents..."
+          tar -tzf mirothinker-${{ github.sha }}.tar.gz | head -20
+          echo "✓ Package created successfully"
+
+  # ==========================================
+  # Job 3: Build Docker Image
+  # ==========================================
+  docker:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' || github.event_name == 'release'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v'))
 
     permissions:
       contents: read
@@ -98,23 +154,190 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job 3: Deploy (only on release to main)
-  deploy:
-    name: Deploy to Production
+  # ==========================================
+  # Job 4: Deploy to Staging
+  # ==========================================
+  deploy-staging:
+    name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to server
-        run: |
-          echo "Deploy step - configure with your deployment strategy"
-          # Add your deployment commands here
-          # Example: SSH to server and run docker-compose pull && docker-compose up -d
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mirothinker-build
+
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -e
+
+            echo "=== MiroThinker Staging Deployment ==="
+            DEPLOY_DIR="/opt/mirothinker-staging"
+            BACKUP_DIR="$DEPLOY_DIR/backups"
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+            # Create directories
+            mkdir -p $DEPLOY_DIR $BACKUP_DIR
+
+            # Backup current version
+            if [ -d "$DEPLOY_DIR/backend" ]; then
+              echo "📦 Creating backup..."
+              cp -r $DEPLOY_DIR/backend $BACKUP_DIR/backend.backup.$TIMESTAMP
+              # Keep only last 5 backups
+              ls -t $BACKUP_DIR | tail -n +6 | xargs -r rm -rf
+            fi
+
+            # Extract new version
+            echo "📥 Extracting new version..."
+            cd $DEPLOY_DIR
+            tar -xzf /tmp/mirothinker-*.tar.gz --strip-components=1
+
+            # Apply staging environment config
+            echo "⚙️  Applying staging configuration..."
+            cp .env.staging .env
+
+            # Install dependencies
+            echo "🔧 Installing dependencies..."
+            cd $DEPLOY_DIR
+            pip3 install -r backend/requirements.txt --quiet --upgrade
+
+            # Restart staging service
+            echo "🔄 Restarting staging service..."
+            systemctl restart mirothinker-staging || true
+
+            # Health check
+            echo "🏥 Running health check..."
+            sleep 5
+            if curl -f http://localhost:8002/api/health; then
+              echo "✅ Staging deployment successful!"
+            else
+              echo "❌ Health check failed. Rolling back..."
+              rm -rf backend
+              cp -r $BACKUP_DIR/backend.backup.$TIMESTAMP backend
+              systemctl restart mirothinker-staging
+              exit 1
+            fi
+
+            # Cleanup
+            rm -f /tmp/mirothinker-*.tar.gz
+            echo "🎉 Staging deployment complete!"
+
+  # ==========================================
+  # Job 5: Deploy to Production
+  # ==========================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mirothinker-build
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            set -e
+
+            echo "=== MiroThinker Production Deployment ==="
+            DEPLOY_DIR="/opt/mirothinker"
+            BACKUP_DIR="$DEPLOY_DIR/backups"
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+            # Create directories
+            mkdir -p $DEPLOY_DIR $BACKUP_DIR
+
+            # Backup current version
+            if [ -d "$DEPLOY_DIR/backend" ]; then
+              echo "📦 Creating backup..."
+              cp -r $DEPLOY_DIR/backend $BACKUP_DIR/backend.backup.$TIMESTAMP
+              # Keep only last 5 backups
+              ls -t $BACKUP_DIR | tail -n +6 | xargs -r rm -rf
+            fi
+
+            # Extract new version
+            echo "📥 Extracting new version..."
+            cd $DEPLOY_DIR
+            tar -xzf /tmp/mirothinker-*.tar.gz --strip-components=1
+
+            # Apply production environment config
+            echo "⚙️  Applying production configuration..."
+            cp .env.production .env
+
+            # Install dependencies
+            echo "🔧 Installing dependencies..."
+            cd $DEPLOY_DIR
+            pip3 install -r backend/requirements.txt --quiet --upgrade
+
+            # Clear Python cache
+            echo "🧹 Clearing Python cache..."
+            find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+            find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
+            # Restart production service
+            echo "🔄 Restarting production service..."
+            systemctl restart mirothinker
+
+            # Health check
+            echo "🏥 Running health check..."
+            sleep 5
+            if curl -f http://localhost:8001/api/health; then
+              echo "✅ Production deployment successful!"
+            else
+              echo "❌ Health check failed. Rolling back..."
+              rm -rf backend
+              cp -r $BACKUP_DIR/backend.backup.$TIMESTAMP backend
+              systemctl restart mirothinker
+              exit 1
+            fi
+
+            # Cleanup
+            rm -f /tmp/mirothinker-*.tar.gz
+            echo "🎉 Production deployment complete!"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # Notification: Manual Deployment Required
+  # ==========================================
+  notify-manual-deploy:
+    name: Manual Deployment Notice
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+    needs: build
+
+    steps:
+      - name: Post notification
+        run: |
+          echo "⚠️  Push to main without version tag."
+          echo "📦 Build artifact created, but production deployment requires a version tag."
+          echo "👉 Create a tag to deploy: git tag v1.x.x && git push origin v1.x.x"

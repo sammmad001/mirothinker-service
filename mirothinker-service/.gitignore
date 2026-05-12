@@ -28,7 +28,16 @@ Thumbs.db
 # Environment Variables
 .env
 .env.local
-.env.production
+.env.*
+!.env.example
+
+# Server Configuration (contains credentials)
+.miro/config.json
+!.miro/config.json.example
+
+# Data directories
+data/
+backups/
 
 # Logs
 logs/

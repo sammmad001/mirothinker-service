@@ -1,0 +1,25 @@
+{
+  "version": "1.8.0",
+  "staging": {
+    "host": "your-staging-host.com",
+    "user": "root",
+    "password": "",
+    "key": "~/.ssh/id_ed25519",
+    "port": 22,
+    "deploy_dir": "/opt/mirothinker-staging",
+    "service_name": "mirothinker-staging",
+    "health_url": "http://localhost:8002/api/health",
+    "domain": "staging.mirothinker.sam-ding.com"
+  },
+  "production": {
+    "host": "your-production-host.com",
+    "user": "root",
+    "password": "",
+    "key": "~/.ssh/id_ed25519",
+    "port": 22,
+    "deploy_dir": "/opt/mirothinker",
+    "service_name": "mirothinker",
+    "health_url": "http://localhost:8001/api/health",
+    "domain": "mirothinker.sam-ding.com"
+  }
+}

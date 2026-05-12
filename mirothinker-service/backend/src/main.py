@@ -5,6 +5,13 @@ Modular architecture with quality enhancement.
 """
 
 from pathlib import Path
+import sys
+from pathlib import Path
+
+# Add backend directory to Python path
+backend_dir = Path(__file__).parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +21,7 @@ from fastapi.responses import FileResponse
 from src.core.config import settings
 from src.core.logging_config import logger, setup_logging
 from src.routes.research import router as research_router
+from src.routes.feishu import router as feishu_router
 
 # Ensure data directories exist
 settings.ensure_directories()
@@ -44,6 +52,7 @@ if frontend_dir.exists():
 
 # Include routers
 app.include_router(research_router, prefix="/api", tags=["research"])
+app.include_router(feishu_router, tags=["feishu"])  # Already has /api/v1/feishu prefix
 
 
 # Root endpoint - serve frontend
@@ -68,6 +77,7 @@ async def health_check():
         "scrape_available": True,  # Trafilatura free, no API key needed
         "serper_configured": bool(settings.SERPER_API_KEY),  # Optional, backward compatible
         "jina_configured": bool(settings.JINA_API_KEY),      # Optional, backward compatible
+        "feishu_configured": settings.validate_feishu_config(),  # Feishu bot status
         "concurrency": {
             "max": settings.MAX_CONCURRENT_TASKS,
             "available": research_semaphore._value if hasattr(research_semaphore, '_value') else "N/A",

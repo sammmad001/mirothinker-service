@@ -1,0 +1,28 @@
+[Unit]
+Description=MiroThinker Deep Research Agent
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mirothinker
+EnvironmentFile=/opt/mirothinker/.env
+ExecStart=/usr/bin/python3 -m uvicorn src.main:app \
+    --host ${HOST:-0.0.0.0} \
+    --port ${PORT:-8001} \
+    --workers ${WORKERS:-1} \
+    --log-level ${LOG_LEVEL:-info}
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mirothinker
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/mirothinker /data/mirothinker /var/log/mirothinker
+
+[Install]
+WantedBy=multi-user.target

@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-05-12
+## [1.8.0] - 2026-05-12
+
+### Added
+- Environment isolation (development, staging, production) with separate config files
+- CI/CD pipeline with automated staging and production deployment
+- Deployment scripts (`deploy-to-ecs.sh`) with rollback support
+- Comprehensive test suite for agent services
+- Git Flow branching strategy documentation
+- Server configuration management (`.miro/config.json`)
+- systemd service files for production and staging
+- Quick reference guide for development workflow (QUICKSTART.md)
+
+### Changed
+- Improved `call_llm` response validation with proper error handling
+- Added `max_tokens` parameter to LLM requests
+- Enhanced deployment process with automatic backups
+- Updated .gitignore to exclude sensitive configuration
+
+## [Unreleased]
+
+## [1.7.0] - 2026-05-12
 
 ### Added
 
