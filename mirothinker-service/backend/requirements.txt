@@ -2,11 +2,12 @@ fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 httpx>=0.25.0
 pydantic>=2.0
+pydantic-settings>=2.0
 
-# 免费搜索和抓取 (替代 Serper + Jina)
-ddgs>=9.0.0  # DuckDuckGo 搜索
+# Free search and scraping (replacing Serper + Jina)
+ddgs>=9.0.0  # DuckDuckGo search
 trafilatura>=1.6.0
-lxml_html_clean>=0.4.0  # Trafilatura 依赖
+lxml_html_clean>=0.4.0  # Trafilatura dependency
 
 # Optional: for system monitoring
 # psutil>=5.9.0

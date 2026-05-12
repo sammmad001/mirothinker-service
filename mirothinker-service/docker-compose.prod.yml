@@ -1,0 +1,72 @@
+version: '3.8'
+
+# Production Docker Compose configuration
+# Optimized for 2GB memory server
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: mirothinker-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - mirothinker-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mirothinker-service
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/traces:/app/data/traces
+      - ./data/logs:/app/data/logs
+      - ./data/cache:/app/data/cache
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1536M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - mirothinker-network
+
+networks:
+  mirothinker-network:
+    driver: bridge
