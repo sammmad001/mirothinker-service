@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     
     # App
     APP_NAME: str = "MiroThinker"
-    APP_VERSION: str = "1.7.0"
+    APP_VERSION: str = "1.8.0"
     DEBUG: bool = False
     
     # Server
