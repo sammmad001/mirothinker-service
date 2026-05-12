@@ -1,73 +1,106 @@
 """
-MiroThinker - Centralized Configuration Management
-Loads and validates environment variables, provides typed config access.
+MiroThinker Online Service - Configuration
+Manages all settings via environment variables and .env file.
 """
 
-import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Dict, Any
 
-from pydantic import Field
 from pydantic_settings import BaseSettings
+from pydantic import Field
+
+
+# Model mapping
+MODEL_MAP: Dict[str, str] = {
+    "qwen-plus": "qwen-plus",
+    "qwen-max": "qwen-max",
+    "qwen-flash": "qwen-flash",
+    "qwen-turbo": "qwen-turbo",
+}
+
+# Domain configurations for quality enhancement
+DOMAIN_CONFIGS: Dict[str, Dict[str, Any]] = {
+    "tech": {
+        "keywords": ["AI", "machine learning", "technology", "software", "computer", "算法", "人工智能", "技术"],
+        "max_turns": 200,
+        "context_keep": 5,
+    },
+    "finance": {
+        "keywords": ["finance", "stock", "investment", "market", "经济", "股票", "投资", "金融"],
+        "max_turns": 200,
+        "context_keep": 5,
+    },
+    "health": {
+        "keywords": ["health", "medical", "disease", "treatment", "健康", "医疗", "疾病"],
+        "max_turns": 200,
+        "context_keep": 5,
+    },
+    "general": {
+        "keywords": [],
+        "max_turns": 200,
+        "context_keep": 5,
+    },
+}
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
-
-    # Application
-    APP_NAME: str = Field(default="MiroThinker Online Service", alias="APP_NAME")
-    APP_VERSION: str = Field(default="1.0.0", alias="APP_VERSION")
-    DEBUG: bool = Field(default=False, alias="DEBUG")
-    HOST: str = Field(default="0.0.0.0", alias="HOST")
-    PORT: int = Field(default=8000, alias="PORT")
-    WORKERS: int = Field(default=1, alias="WORKERS")
-
-    # DashScope LLM
-    DASHSCOPE_API_KEY: str = Field(default="", alias="DASHSCOPE_API_KEY")
-    DASHSCOPE_BASE_URL: str = Field(
-        default="https://dashscope.aliyuncs.com/compatible-mode/v1",
-        alias="DASHSCOPE_BASE_URL"
-    )
-
-    # Legacy API Keys (optional, for backward compatibility)
-    SERPER_API_KEY: str = Field(default="", alias="SERPER_API_KEY")
-    JINA_API_KEY: str = Field(default="", alias="JINA_API_KEY")
-
-    # Model Configuration
-    DEFAULT_MODEL: str = Field(default="qwen-plus", alias="DEFAULT_MODEL")
-    DEFAULT_TEMPERATURE: float = Field(default=0.7, alias="DEFAULT_TEMPERATURE")
-    DEFAULT_MAX_TURNS: int = Field(default=200, alias="DEFAULT_MAX_TURNS")
-    DEFAULT_CONTEXT_KEEP: int = Field(default=5, alias="DEFAULT_CONTEXT_KEEP")
-
+    """Application settings loaded from environment and .env file."""
+    
+    # App
+    APP_NAME: str = "MiroThinker"
+    APP_VERSION: str = "1.7.0"
+    DEBUG: bool = False
+    
+    # Server
+    HOST: str = "0.0.0.0"
+    PORT: int = 8001
+    WORKERS: int = 1
+    
+    # Alibaba Bailian LLM
+    DASHSCOPE_API_KEY: str = ""
+    DASHSCOPE_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    DASHSCOPE_MODEL: str = "qwen-plus"
+    
+    # Optional: Serper & Jina
+    SERPER_API_KEY: str = ""
+    JINA_API_KEY: str = ""
+    
+    # Feishu/Lark Configuration
+    LARK_APP_ID: str = ""
+    LARK_APP_SECRET: str = ""
+    LARK_WEBHOOK_VERIFICATION_TOKEN: str = ""
+    LARK_WEBHOOK_ENCRYPT_KEY: str = ""
+    
     # Concurrency
-    MAX_CONCURRENT_TASKS: int = Field(default=2, alias="MAX_CONCURRENT_TASKS")
-
+    MAX_CONCURRENT_TASKS: int = 2
+    
+    # Data directories
+    DATA_DIR: Path = Path("./data")
+    LOGS_DIR: Path = Path("./data/logs")
+    CACHE_DIR: Path = Path("./data/cache")
+    TRACES_DIR: Path = Path("./data/traces")
+    FRONTEND_DIR: Path = Path("./frontend")
+    
     # CORS
-    CORS_ORIGINS: list[str] = Field(default=["*"], alias="CORS_ORIGINS")
-
-    # Data Directories
-    DATA_DIR: Path = Field(default=Path("data"), alias="DATA_DIR")
-    TRACES_DIR: Path = Field(default=Path("data/traces"), alias="TRACES_DIR")
-    LOGS_DIR: Path = Field(default=Path("data/logs"), alias="LOGS_DIR")
-    CACHE_DIR: Path = Field(default=Path("data/cache"), alias="CACHE_DIR")
-
-    # Frontend
-    FRONTEND_DIR: Path = Field(default=Path("frontend"), alias="FRONTEND_DIR")
-
+    CORS_ORIGINS: List[str] = ["*"]
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
-        extra = "ignore"
-
+    
     def validate_api_key(self) -> bool:
-        """Validate that required API keys are configured."""
-        return bool(self.DASHSCOPE_API_KEY and self.DASHSCOPE_API_KEY.strip())
-
-    def ensure_directories(self) -> None:
-        """Create data directories if they don't exist."""
-        for directory in [self.DATA_DIR, self.TRACES_DIR, self.LOGS_DIR, self.CACHE_DIR]:
-            directory.mkdir(parents=True, exist_ok=True)
+        """Check if DASHSCOPE_API_KEY is configured."""
+        return bool(self.DASHSCOPE_API_KEY and self.DASHSCOPE_API_KEY != "your-api-key-here")
+    
+    def validate_feishu_config(self) -> bool:
+        """Check if Feishu credentials are configured."""
+        return bool(self.LARK_APP_ID and self.LARK_APP_SECRET)
+    
+    def ensure_directories(self):
+        """Ensure all data directories exist."""
+        for dir_path in [self.DATA_DIR, self.LOGS_DIR, self.CACHE_DIR, self.TRACES_DIR]:
+            dir_path.mkdir(parents=True, exist_ok=True)
 
 
 # Global settings instance
@@ -75,65 +108,5 @@ settings = Settings()
 
 
 def get_settings() -> Settings:
-    """Dependency injector for settings."""
+    """Get the global settings instance."""
     return settings
-
-
-# === Constants (moved from original main.py) ===
-
-MODEL_MAP = {
-    "qwen-turbo": "qwen-turbo",
-    "qwen-flash": "qwen-flash",
-    "qwen-plus": "qwen-plus",
-    "qwen-max": "qwen-max",
-}
-
-CORE_SOURCES = {
-    "academic": {
-        "name": "学术信源",
-        "search_template": "site:scholar.google.com OR site:arxiv.org OR site:pubmed.ncbi.nlm.nih.gov {query}",
-        "priority": "highest",
-    },
-    "tech": {
-        "name": "技术信源",
-        "search_template": "site:github.com OR site:stackoverflow.com OR site:docs.python.org {query}",
-        "priority": "high",
-    },
-    "news": {
-        "name": "新闻信源",
-        "search_template": "site:reuters.com OR site:apnews.com OR site:bbc.com/news {query}",
-        "priority": "high",
-    },
-    "data": {
-        "name": "数据信源",
-        "search_template": "site:data.worldbank.org OR site:imf.org OR site:data.stats.gov.cn {query}",
-        "priority": "medium",
-    },
-}
-
-DOMAIN_CONFIGS = {
-    "tech": {
-        "name": "技术/科技",
-        "core_sources": ["github.com", "stackoverflow.com", "arxiv.org"],
-        "keywords": ["AI", "机器学习", "深度学习", "Python", "软件", "算法", "区块链", "AI/ML", "software", "algorithm"],
-        "prompt_variant": "technical",
-    },
-    "finance": {
-        "name": "金融/经济",
-        "core_sources": ["reuters.com", "bloomberg.com", "imf.org", "worldbank.org"],
-        "keywords": ["经济", "金融", "GDP", "通胀", "投资", "股市", "市场", "economy", "finance", "investment", "market"],
-        "prompt_variant": "data_driven",
-    },
-    "health": {
-        "name": "医疗/健康",
-        "core_sources": ["pubmed.ncbi.nlm.nih.gov", "nature.com", "who.int"],
-        "keywords": ["医疗", "健康", "疾病", "药物", "治疗", "疫苗", "临床", "medical", "health", "disease", "treatment"],
-        "prompt_variant": "evidence_based",
-    },
-    "general": {
-        "name": "综合",
-        "core_sources": [],
-        "keywords": [],
-        "prompt_variant": "general",
-    },
-}

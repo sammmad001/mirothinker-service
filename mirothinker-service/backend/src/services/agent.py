@@ -214,7 +214,7 @@ class ResearchAgent:
         model: str,
         temperature: float,
     ) -> dict:
-        """Call DashScope API."""
+        """Call DashScope API with proper response validation."""
         import httpx
 
         async with httpx.AsyncClient() as client:
@@ -228,6 +228,7 @@ class ResearchAgent:
                     "model": model,
                     "messages": messages,
                     "temperature": temperature,
+                    "max_tokens": 4096,
                 },
                 timeout=120,
             )
@@ -236,7 +237,20 @@ class ResearchAgent:
                 raise Exception(f"LLM API error: {resp.status_code} - {resp.text}")
 
             data = resp.json()
-            return data["choices"][0]["message"]
+            
+            # Validate response structure
+            if "choices" not in data or not data["choices"]:
+                raise Exception(f"LLM API returned invalid response: {data}")
+            
+            choice = data["choices"][0]
+            if "message" not in choice:
+                raise Exception(f"LLM choice missing message field: {choice}")
+            
+            message = choice["message"]
+            if not isinstance(message, dict):
+                raise Exception(f"LLM message is not a dict: {type(message)} - {message}")
+            
+            return message
 
     async def run(
         self,
