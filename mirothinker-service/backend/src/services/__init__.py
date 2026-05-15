@@ -76,6 +76,15 @@ from .quality_scorer import (
     quick_score,
 )
 
+# Research enforcement (强制规则)
+from .research_enforcer import (
+    ResearchEnforcer,
+    EnforcementConfig,
+    ValidationResult,
+    TimeAwareSearchFilter,
+    check_research_quality,
+)
+
 __all__ = [
     # Core services
     "ContradictionDetector",
@@ -140,4 +149,11 @@ __all__ = [
     "ScoreBreakdown",
     "ScoreLevel",
     "quick_score",
+
+    # Research enforcement (强制规则)
+    "ResearchEnforcer",
+    "EnforcementConfig",
+    "ValidationResult",
+    "TimeAwareSearchFilter",
+    "check_research_quality",
 ]
