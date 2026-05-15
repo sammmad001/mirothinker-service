@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Button Test</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=20260513b">
+  <style>
+    body { padding: 40px; }
+    .test-section { margin: 20px 0; padding: 20px; border: 1px solid #30363d; border-radius: 8px; }
+    h2 { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>按钮样式测试</h1>
+  
+  <div class="test-section">
+    <h2>正常状态按钮</h2>
+    <div style="position: relative; width: 60px; height: 60px; background: #1c2333; border-radius: 8px;">
+      <textarea style="width: 100%; padding: 16px 60px 16px 16px; background: #1c2333; border: 1px solid #30363d; border-radius: 8px; color: #e6edf3; font-size: 15px; resize: none; height: 60px;" placeholder="输入研究问题..."></textarea>
+      <button class="btn-submit" id="test-btn-normal">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span class="btn-text" style="display: none;">开始研究</span>
+        <span class="btn-loading" style="display: none;">
+          <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+          </svg>
+          研究中...
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>加载中状态按钮（添加 loading class）</h2>
+    <div style="position: relative; width: 60px; height: 60px; background: #1c2333; border-radius: 8px;">
+      <textarea style="width: 100%; padding: 16px 60px 16px 16px; background: #1c2333; border: 1px solid #30363d; border-radius: 8px; color: #e6edf3; font-size: 15px; resize: none; height: 60px;" placeholder="输入研究问题..."></textarea>
+      <button class="btn-submit loading" disabled>
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span class="btn-text" style="display: none;">开始研究</span>
+        <span class="btn-loading" style="display: flex;">
+          <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+          </svg>
+          研究中...
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>过程展示测试</h2>
+    <div class="process-panel">
+      <div class="process-header">
+        <svg class="spinner-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+        </svg>
+        <span>研究进行中...</span>
+      </div>
+      <div class="process-steps">
+        <div class="process-step">
+          <div class="step-icon thought">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="step-content">
+            <div class="step-label">思考</div>
+            <div class="step-text">正在分析研究问题...</div>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="step-icon action">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="step-content">
+            <div class="step-label">行动</div>
+            <div class="step-text">第 1 轮：执行搜索，获取相关信息...</div>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="step-icon source">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div class="step-content">
+            <div class="step-label">来源</div>
+            <div class="step-text">已收集 8 个信息来源，正在进行质量评分...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('test-btn-normal').addEventListener('click', function() {
+      this.classList.add('loading');
+      this.disabled = true;
+      this.querySelector('.btn-icon').style.display = 'none';
+      this.querySelector('.btn-text').style.display = 'flex';
+      this.querySelector('.btn-loading').style.display = 'flex';
+    });
+  </script>
+</body>
+</html>

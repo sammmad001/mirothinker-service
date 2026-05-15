@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LocalStorage 诊断</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #0d1117; color: #e6edf3; }
+    .section { margin: 20px 0; padding: 15px; border: 1px solid #30363d; border-radius: 8px; }
+    button { padding: 10px 20px; margin: 5px; background: #58a6ff; border: none; color: white; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #79b8ff; }
+    pre { background: #161b22; padding: 10px; border-radius: 6px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>LocalStorage 诊断工具</h1>
+  
+  <div class="section">
+    <h2>1. LocalStorage 支持检测</h2>
+    <p id="support-result"></p>
+  </div>
+  
+  <div class="section">
+    <h2>2. 当前存储的研究记录</h2>
+    <button onclick="loadAndDisplay()">加载记录</button>
+    <button onclick="clearStorage()">清除所有记录</button>
+    <button onclick="addTestRecord()">添加测试记录</button>
+    <pre id="storage-content">点击"加载记录"查看</pre>
+  </div>
+  
+  <div class="section">
+    <h2>3. 所有 localStorage 项目</h2>
+    <button onclick="showAllItems()">显示所有项目</button>
+    <pre id="all-items"></pre>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'mirothinker_conversations';
+    
+    // Check localStorage support
+    try {
+      localStorage.setItem('__test__', 'test');
+      localStorage.removeItem('__test__');
+      document.getElementById('support-result').innerHTML = '<span style="color: #3fb950;">✅ localStorage 可用</span>';
+    } catch (e) {
+      document.getElementById('support-result').innerHTML = '<span style="color: #f85149;">❌ localStorage 不可用: ' + e.message + '</span>';
+    }
+    
+    function loadAndDisplay() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const conversations = JSON.parse(saved);
+          document.getElementById('storage-content').textContent = 
+            '找到 ' + conversations.length + ' 条记录:\n' + 
+            JSON.stringify(conversations, null, 2);
+        } else {
+          document.getElementById('storage-content').textContent = '没有找到研究记录 (key: ' + STORAGE_KEY + ')';
+        }
+      } catch (e) {
+        document.getElementById('storage-content').textContent = '错误: ' + e.message;
+      }
+    }
+    
+    function clearStorage() {
+      if (confirm('确定要清除所有研究记录吗？')) {
+        localStorage.removeItem(STORAGE_KEY);
+        loadAndDisplay();
+        alert('已清除');
+      }
+    }
+    
+    function addTestRecord() {
+      let conversations = [];
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          conversations = JSON.parse(saved);
+        }
+      } catch (e) {}
+      
+      conversations.unshift({
+        id: Date.now().toString(),
+        query: '测试研究问题',
+        timestamp: new Date().toISOString(),
+        status: 'completed',
+        result: '这是测试结果',
+        turnCount: 5,
+        elapsedTime: 12.5,
+        qualityScore: 0.85
+      });
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+      loadAndDisplay();
+    }
+    
+    function showAllItems() {
+      let output = 'Total items: ' + localStorage.length + '\n\n';
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        output += key + ': ' + value.substring(0, 100) + (value.length > 100 ? '...' : '') + '\n';
+      }
+      document.getElementById('all-items').textContent = output || 'localStorage 为空';
+    }
+  </script>
+</body>
+</html>
