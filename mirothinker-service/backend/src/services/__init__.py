@@ -67,6 +67,15 @@ from .quality_enhancement import (
     QualityReportBuilder,
 )
 
+# Research scoring
+from .quality_scorer import (
+    ResearchQualityScorer,
+    QualityScore,
+    ScoreBreakdown,
+    ScoreLevel,
+    quick_score,
+)
+
 __all__ = [
     # Core services
     "ContradictionDetector",
@@ -124,4 +133,11 @@ __all__ = [
     # Quality enhancement
     "QualityEnhancer",
     "QualityReportBuilder",
+
+    # Research scoring
+    "ResearchQualityScorer",
+    "QualityScore",
+    "ScoreBreakdown",
+    "ScoreLevel",
+    "quick_score",
 ]
